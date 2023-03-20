@@ -4,6 +4,7 @@ Raytracing in 2d
 Class for a photon, i.e. the particle/ray whose path is traced
 """
 
+import misc
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -24,7 +25,7 @@ class Photon:
         :param ior: Current index of refraction
         """
         self.pos = np.array(pos)
-        self.direc = direc / np.sqrt(np.dot(direc, direc))
+        self.direc = misc.norm(direc)
         self.ior = ior
 
     def plot_photon(self, length: numeric = 2, **kwargs) -> None:

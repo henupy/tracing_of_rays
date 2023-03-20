@@ -5,7 +5,7 @@ This stuff is inspired by a course in MIT OpenCourseWare
 18.S191 / 6.S083 / 22.S092 Introduction to Computational thinking
 """
 
-import random
+import misc
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -45,10 +45,10 @@ def create_boundaries(boundaries: tuple, reflective: bool = False) \
     right_norm = [-1, 0]
     top_norm = [0, -1]
     surfs = [
-        edge_type(bottom_left, bottom_norm, xlen),
-        edge_type(bottom_right, right_norm, ylen),
-        edge_type(top_right, top_norm, xlen),
-        edge_type(top_left, left_norm, ylen)
+        edge_type(pos=bottom_left, direc=bottom_norm, length=xlen),
+        edge_type(pos=bottom_right, direc=right_norm, length=ylen),
+        edge_type(pos=top_right, direc=top_norm, length=xlen),
+        edge_type(pos=top_left, direc=left_norm, length=ylen)
     ]
     return surfs
 
@@ -62,24 +62,6 @@ def _intersect_time(p: Photon, surf: surface) -> numeric:
     :return:
     """
     return np.dot((surf.pos - p.pos), surf.norm) / np.dot(p.direc, surf.norm)
-
-
-def _vector_len(v: vec) -> numeric:
-    """
-    Computes the length of the vector
-    :param v:
-    :return:
-    """
-    return np.sqrt(np.dot(v, v))
-
-
-def _norm(v: vec) -> vec:
-    """
-    Normalizes the vector
-    :param v:
-    :return:
-    """
-    return v / _vector_len(v)
 
 
 def _find_intersections(p: Photon, surf: surface) -> Optional[Interaction]:
@@ -97,12 +79,12 @@ def _find_intersections(p: Photon, surf: surface) -> Optional[Interaction]:
     point = p.pos + t * p.direc
     dist = (point - surf.pos)
     # Check whether the collision point is actually on the surface
-    if _vector_len(dist) > surf.length or np.dot(_norm(dist), surf.adj) == -1:
+    if misc.vector_len(dist) > surf.length or np.dot(misc.norm(dist), surf.adj) == -1:
         return None
     # Substract a small fraction from the collision time, so that
     # the photon doesn't end up inside the wall
-    point = p.pos + (t - t * 0.01) * p.direc
-    return Interaction(surf, t, point)
+    point = p.pos + (t * 0.99) * p.direc
+    return Interaction(surf=surf, time=t, point=point)
 
 
 def _closest_hit(p: Photon, surfs: list[surface]) -> Interaction:
@@ -113,7 +95,7 @@ def _closest_hit(p: Photon, surfs: list[surface]) -> Interaction:
     :param surfs: List of the surfaces present in the geometry
     :return:
     """
-    hits = [_find_intersections(p, w) for w in surfs]
+    hits = [_find_intersections(p=p, surf=w) for w in surfs]
     hits = [h for h in hits if isinstance(h, Interaction)]
     return min(hits, key=lambda x: x.time)
 
@@ -125,8 +107,8 @@ def _sample_collision(p: Photon, surfs: list[surface]) -> None:
     :param surfs:
     :return:
     """
-    coll = _closest_hit(p, surfs)
-    coll.surf.interact(p, coll.point)
+    coll = _closest_hit(p=p, surfs=surfs)
+    coll.surf.interact(p=p, pos=coll.point)
 
 
 def init_random_photons(n: int, boundaries: tuple) -> list[Photon]:
@@ -140,9 +122,9 @@ def init_random_photons(n: int, boundaries: tuple) -> list[Photon]:
     xmin, xmax, ymin, ymax = boundaries
     photons = []
     for _ in range(n):
-        x = xmin + random.random() * (xmax - xmin)
-        y = ymin + random.random() * (ymax - ymin)
-        direction = random.random() * np.pi * 2
+        x = misc.rand_range(a=xmin, b=xmax)
+        y = misc.rand_range(a=ymin, b=ymax)
+        direction = misc.rand_range(a=0, b=np.pi * 2)
         dir_vec = [np.cos(direction), np.sin(direction)]
         photons.append(Photon([x, y], dir_vec))
     return photons
@@ -162,25 +144,29 @@ def trace(p_arr: list[Photon], surfs: list[surface],
     """
     data = []
     for p in p_arr:
-        coords = np.zeros((1, 2))
+        coords = np.zeros(shape=(1, 2))
         coords[0] = p.pos
         for _ in range(1, n_events + 1):
-            _sample_collision(p, surfs)
+            _sample_collision(p=p, surfs=surfs)
             coords = np.vstack((coords, p.pos))
         data.append(coords)
     return data
 
 
-def plot_data(data: list[np.ndarray], **kwargs) -> None:
+def plot_data(data: list[np.ndarray], colors: list = None, **kwargs) -> None:
     """
     Plots the tracks of the photons
     :param data: List of numpy-arrays containing the coordinates
     of the photons
+    :param colors: Colors for the tracks of the photons
     :param kwargs: Keyword arguments for lineplots
     :return:
     """
-    for coords in data:
+    for i, coords in enumerate(data):
         plt.scatter(coords[0, 0], coords[0, 1])
+        if colors is not None:
+            c = colors[i]
+            kwargs['c'] = c
         plt.plot(coords[:, 0], coords[:, 1], **kwargs)
     plt.grid()
 
@@ -196,8 +182,9 @@ def main():
     photons = init_random_photons(n_photons, boundaries)
     for w in walls:
         w.plot_wall(c='red')
-    data = trace(photons, walls, n_events=4)
-    plot_data(data, c='blue')
+    data = trace(photons, walls, n_events=20)
+    colors = ['green', 'blue']
+    plot_data(data=data, colors=colors)
     plt.show()
 
 
