@@ -25,9 +25,9 @@ def create_boundaries(boundaries: tuple, reflective: bool = False) \
     """
     Creates the surfaces that form the rectangular edges of the geometry
     :param boundaries: Boundaries of the geometry, as a tuple of the form
-    (xmin, xmax, ymin, ymax)
+        (xmin, xmax, ymin, ymax)
     :param reflective: Whether the edges are reflective or not, if not
-    reflective, the photons just escape the geometry
+        reflective, the photons just escape the geometry
     :return:
     """
     xmin, xmax, ymin, ymax = boundaries
@@ -51,6 +51,25 @@ def create_boundaries(boundaries: tuple, reflective: bool = False) \
         edge_type(pos=top_left, direc=left_norm, length=ylen)
     ]
     return surfs
+
+
+def init_random_photons(n: int, boundaries: tuple) -> list[Photon]:
+    """
+    Initialize n photons with random locations and directions of travel
+    :param n: Number of photons
+    :param boundaries: Boundaries of the geometry, as a tuple of the form
+        (xmin, xmax, ymin, ymax)
+    :return:
+    """
+    xmin, xmax, ymin, ymax = boundaries
+    photons = []
+    for _ in range(n):
+        x = misc.rand_range(a=xmin, b=xmax)
+        y = misc.rand_range(a=ymin, b=ymax)
+        direction = misc.rand_range(a=0, b=np.pi * 2)
+        dir_vec = [np.cos(direction), np.sin(direction)]
+        photons.append(Photon([x, y], dir_vec))
+    return photons
 
 
 def _intersect_time(p: Photon, surf: surface) -> numeric:
@@ -111,35 +130,16 @@ def _sample_collision(p: Photon, surfs: list[surface]) -> None:
     coll.surf.interact(p=p, pos=coll.point)
 
 
-def init_random_photons(n: int, boundaries: tuple) -> list[Photon]:
-    """
-    Initialize n photons with random locations and directions of travel
-    :param n: Number of photons
-    :param boundaries: Boundaries of the geometry, as a tuple of the form
-    (xmin, xmax, ymin, ymax)
-    :return:
-    """
-    xmin, xmax, ymin, ymax = boundaries
-    photons = []
-    for _ in range(n):
-        x = misc.rand_range(a=xmin, b=xmax)
-        y = misc.rand_range(a=ymin, b=ymax)
-        direction = misc.rand_range(a=0, b=np.pi * 2)
-        dir_vec = [np.cos(direction), np.sin(direction)]
-        photons.append(Photon([x, y], dir_vec))
-    return photons
-
-
 def trace(p_arr: list[Photon], surfs: list[surface],
           n_events: int = 100) -> list[np.ndarray]:
     """
     Traces the paths of the photons until they escape the geometry, or
     n number of interactions have occurred
     :param p_arr: List of the photons present initially in the
-    geometry
+        geometry
     :param surfs: List of the surfaces in the geometry
     :param n_events: Maximum number of interactions to track, so that the
-    simulation doesn't run endlessly
+        simulation doesn't run endlessly
     :return: The paths (x- and y-coordinates) of the photons
     """
     data = []
@@ -157,7 +157,7 @@ def plot_data(data: list[np.ndarray], colors: list = None, **kwargs) -> None:
     """
     Plots the tracks of the photons
     :param data: List of numpy-arrays containing the coordinates
-    of the photons
+        of the photons
     :param colors: Colors for the tracks of the photons
     :param kwargs: Keyword arguments for lineplots
     :return:
@@ -165,7 +165,7 @@ def plot_data(data: list[np.ndarray], colors: list = None, **kwargs) -> None:
     for i, coords in enumerate(data):
         plt.scatter(coords[0, 0], coords[0, 1])
         if colors is not None:
-            c = colors[i]
+            c = colors[i % len(colors)]
             kwargs['c'] = c
         plt.plot(coords[:, 0], coords[:, 1], **kwargs)
     plt.grid()
@@ -176,15 +176,15 @@ def main():
     ymin, ymax = -5, 5
     n_photons = 2
     boundaries = (xmin, xmax, ymin, ymax)
-    walls = create_boundaries(boundaries, reflective=True)
-    slanted_wall = Mirror([1, 1], [0.5, 0.5], 2)
+    walls = create_boundaries(boundaries=boundaries, reflective=True)
+    slanted_wall = Mirror(pos=[1, 1], direc=[0.5, 0.5], length=2)
     walls.append(slanted_wall)
-    photons = init_random_photons(n_photons, boundaries)
+    photons = init_random_photons(n=n_photons, boundaries=boundaries)
     for w in walls:
         w.plot_wall(c='red')
-    data = trace(photons, walls, n_events=20)
+    data = trace(p_arr=photons, surfs=walls, n_events=20)
     colors = ['green', 'blue']
-    plot_data(data=data, colors=colors)
+    plot_data(data=data, colors=colors, lw=0.5)
     plt.show()
 
 

@@ -22,7 +22,7 @@ class Interaction:
         """
         :param surf: A surface object that has intersected with a photon
         :param time: The time it takes for the photon to reach the
-        intersection point
+            intersection point
         :param point: The location of the intersection
         """
         self.surf = surf
