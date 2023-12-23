@@ -14,9 +14,7 @@ from typing import Optional
 from interaction import Interaction
 from surfaces import Surface, Mirror
 
-# Shortcuts for typing
-numeric = int | float
-vec = list | np.ndarray
+# Shortcut for typing
 surface = Surface | Mirror
 
 
@@ -25,9 +23,9 @@ def create_boundaries(boundaries: tuple, reflective: bool = False) \
     """
     Creates the surfaces that form the rectangular edges of the geometry
     :param boundaries: Boundaries of the geometry, as a tuple of the form
-        (xmin, xmax, ymin, ymax)
+    (xmin, xmax, ymin, ymax)
     :param reflective: Whether the edges are reflective or not, if not
-        reflective, the photons just escape the geometry
+    reflective, the photons just escape the geometry
     :return:
     """
     xmin, xmax, ymin, ymax = boundaries
@@ -36,14 +34,14 @@ def create_boundaries(boundaries: tuple, reflective: bool = False) \
     edge_type = Surface
     if reflective:
         edge_type = Mirror
-    bottom_left = [xmin, ymin]
-    bottom_right = [xmax, ymin]
-    top_right = [xmax, ymax]
-    top_left = [xmin, ymax]
-    left_norm = [1, 0]
-    bottom_norm = [0, 1]
-    right_norm = [-1, 0]
-    top_norm = [0, -1]
+    bottom_left = np.array([xmin, ymin])
+    bottom_right = np.array([xmax, ymin])
+    top_right = np.array([xmax, ymax])
+    top_left = np.array([xmin, ymax])
+    left_norm = np.array([1, 0])
+    bottom_norm = np.array([0, 1])
+    right_norm = np.array([-1, 0])
+    top_norm = np.array([0, -1])
     surfs = [
         edge_type(pos=bottom_left, direc=bottom_norm, length=xlen),
         edge_type(pos=bottom_right, direc=right_norm, length=ylen),
@@ -58,7 +56,7 @@ def init_random_photons(n: int, boundaries: tuple) -> list[Photon]:
     Initialize n photons with random locations and directions of travel
     :param n: Number of photons
     :param boundaries: Boundaries of the geometry, as a tuple of the form
-        (xmin, xmax, ymin, ymax)
+    (xmin, xmax, ymin, ymax)
     :return:
     """
     xmin, xmax, ymin, ymax = boundaries
@@ -68,11 +66,11 @@ def init_random_photons(n: int, boundaries: tuple) -> list[Photon]:
         y = misc.rand_range(a=ymin, b=ymax)
         direction = misc.rand_range(a=0, b=np.pi * 2)
         dir_vec = [np.cos(direction), np.sin(direction)]
-        photons.append(Photon([x, y], dir_vec))
+        photons.append(Photon(np.array([x, y]), np.array(dir_vec)))
     return photons
 
 
-def _intersect_time(p: Photon, surf: surface) -> numeric:
+def _intersect_time(p: Photon, surf: surface) -> int | float:
     """
     Calculates the time it takes for the photon to intersect the
     surface
@@ -136,10 +134,10 @@ def trace(p_arr: list[Photon], surfs: list[surface],
     Traces the paths of the photons until they escape the geometry, or
     n number of interactions have occurred
     :param p_arr: List of the photons present initially in the
-        geometry
+    geometry
     :param surfs: List of the surfaces in the geometry
     :param n_events: Maximum number of interactions to track, so that the
-        simulation doesn't run endlessly
+    simulation doesn't run endlessly
     :return: The paths (x- and y-coordinates) of the photons
     """
     data = []
@@ -157,7 +155,7 @@ def plot_data(data: list[np.ndarray], colors: list = None, **kwargs) -> None:
     """
     Plots the tracks of the photons
     :param data: List of numpy-arrays containing the coordinates
-        of the photons
+    of the photons
     :param colors: Colors for the tracks of the photons
     :param kwargs: Keyword arguments for lineplots
     :return:
@@ -166,27 +164,28 @@ def plot_data(data: list[np.ndarray], colors: list = None, **kwargs) -> None:
         plt.scatter(coords[0, 0], coords[0, 1])
         if colors is not None:
             c = colors[i % len(colors)]
-            kwargs['c'] = c
+            kwargs["c"] = c
         plt.plot(coords[:, 0], coords[:, 1], **kwargs)
     plt.grid()
 
 
-def main():
+def main() -> None:
     xmin, xmax = -5, 5
     ymin, ymax = -5, 5
     n_photons = 2
     boundaries = (xmin, xmax, ymin, ymax)
     walls = create_boundaries(boundaries=boundaries, reflective=True)
-    slanted_wall = Mirror(pos=[1, 1], direc=[0.5, 0.5], length=2)
+    slanted_wall = Mirror(pos=np.array([1, 1]), direc=np.array([0.5, 0.5]),
+                          length=2)
     walls.append(slanted_wall)
     photons = init_random_photons(n=n_photons, boundaries=boundaries)
     for w in walls:
-        w.plot_wall(c='red')
+        w.plot_wall(c="red")
     data = trace(p_arr=photons, surfs=walls, n_events=20)
-    colors = ['green', 'blue']
+    colors = ["green", "blue"]
     plot_data(data=data, colors=colors, lw=0.5)
     plt.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

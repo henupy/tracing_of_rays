@@ -117,7 +117,7 @@ class Vec3:
         """
         :return:
         """
-        return f'x={self.x}, y={self.y}, z={self.z}'
+        return f"x={self.x}, y={self.y}, z={self.z}"
 
 
 # Some useful functions

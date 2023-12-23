@@ -116,10 +116,10 @@ def render(fname: str, img_w: int, img_h: int, cam: Camera,
     :return:
     """
     scale = 1 / samples
-    with open(fname, 'w') as f:
-        f.write(f'P3\n{img_w} {img_h}\n255\n')
+    with open(fname, "w") as f:
+        f.write(f"P3\n{img_w} {img_h}\n255\n")
         for j in range(img_h - 1, -1, -1):
-            print(f'Lines remaining: {j}', end=' ')
+            print(f"Lines remaining: {j}", end=" ")
             s = default_timer()
             for i in range(img_w):
                 color = _sample_pix(cam, world, i, j, img_w, img_h, samples,
@@ -131,9 +131,9 @@ def render(fname: str, img_w: int, img_h: int, cam: Camera,
                 ir = int(256 * _clamp(r, 0, 0.999))
                 ig = int(256 * _clamp(g, 0, 0.999))
                 ib = int(256 * _clamp(b, 0, 0.999))
-                f.write(f'{ir} {ig} {ib}\n')
+                f.write(f"{ir} {ig} {ib}\n")
             e = default_timer()
-            print(f'Estimated time: : {(e - s) * j / 60:.3f} min')
+            print(f"Estimated time: : {(e - s) * j / 60:.3f} min")
 
 
 def random_scene() -> HittableList:
@@ -175,7 +175,7 @@ def random_scene() -> HittableList:
 
 
 def main():
-    fname = 'images/final_scene_small.ppm'
+    fname = "images/final_scene_small.ppm"
 
     # Image
     aspect = 16 / 9
@@ -200,5 +200,5 @@ def main():
     render(fname, img_w, img_h, cam, world, samples_per_pixel, max_depth)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

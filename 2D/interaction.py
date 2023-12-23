@@ -9,7 +9,6 @@ import numpy as np
 from surfaces import Mirror
 
 # Shortcut for typing
-numeric = int | float
 surface = Mirror
 
 
@@ -17,12 +16,12 @@ class Interaction:
     """
     Indicates a hit
     """
-    def __init__(self, surf: surface, time: numeric,
+    def __init__(self, surf: surface, time: int | float,
                  point: np.ndarray) -> None:
         """
         :param surf: A surface object that has intersected with a photon
         :param time: The time it takes for the photon to reach the
-            intersection point
+        intersection point
         :param point: The location of the intersection
         """
         self.surf = surf
@@ -34,4 +33,4 @@ class Interaction:
         Nice representation of a collision
         :return:
         """
-        return f'Collision at {self.point[0], self.point[1]}'
+        return f"Collision at {self.point[0], self.point[1]}"

@@ -10,25 +10,20 @@ import matplotlib.pyplot as plt
 
 from photon import Photon
 
-# Shortcuts for typing
-numeric = int | float
-vec = list | np.ndarray
-
 
 class Surface:
     """
     Represents a straight non-reflective surface, supposed to be used as
-    a boundary that let's the photon through, i.e. a non-reflective
+    a boundary that lets the photons through, i.e. a non-reflective
     boundary condition
     """
-
-    def __init__(self, pos: vec, direc: vec, length: numeric) -> None:
+    def __init__(self, pos: np.ndarray, direc: np.ndarray, length: int | float) -> None:
         """
         :param pos: Position of the mirror's corner
         :param direc: Direction of the mirror's normal vector
         :param length: Length of the mirror (only used for plotting)
         """
-        self.pos = np.array(pos)  # Convert to np.array just in case
+        self.pos = pos
         self.norm = misc.norm(v=direc)
         self.adj = np.array([self.norm[1], -self.norm[0]])
         self.length = length
@@ -45,7 +40,7 @@ class Surface:
                  alpha=self.alpha, **kwargs)
 
     @staticmethod
-    def interact(p: Photon, pos: vec) -> None:
+    def interact(p: Photon, pos: np.ndarray) -> None:
         """
         Interacts with the photon, i.e. places it along the boundary
         :param p: A photon object
@@ -60,7 +55,7 @@ class Mirror(Surface):
     Represents a straight reflective wall, i.e. a mirror, in the geometry
     """
 
-    def __init__(self, pos: vec, direc: vec, length: numeric) -> None:
+    def __init__(self, pos: np.ndarray, direc: np.ndarray, length: int | float) -> None:
         """
         :param pos: Position of the mirror's corner
         :param direc: Direction of the mirror's normal vector
